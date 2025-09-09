@@ -1142,6 +1142,9 @@ class KiteAI:
             self.print_stake_question()
             self.print_delay_question()
 
+        elif option == 6:
+            self.print_delay_question()
+
         elif option == 8:
             self.print_ai_chat_question()
             self.print_delay_question()
@@ -1158,7 +1161,7 @@ class KiteAI:
             self.print_bridge_question()
             self.print_delay_question()
 
-        else:
+        elif option == 12:
             if self.auto_deposit_token:
                 self.print_deposit_question()
 
@@ -2705,7 +2708,7 @@ class KiteAI:
             elif option == 11:
                 await self.process_option_11(account, address, use_proxy)
 
-            else:
+            elif option == 12:
                 if self.auto_claim_faucet:
                     await self.process_option_1(address, user, use_proxy)
 
