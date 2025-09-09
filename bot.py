@@ -202,7 +202,7 @@ class KiteAI:
         self.KITE_SUBNET = {
             "id": "496",
             "name": "Kite AI Agents",
-            "address": "0xb132001567650917d6bd695d1fab55db7986e9a5"
+            "address": "0x233b43fbe16b3c29df03914bac6a4b5e1616c3f3"
         }
 
         self.BITTE_SUBNET = {
