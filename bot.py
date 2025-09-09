@@ -20,20 +20,24 @@ wib = pytz.timezone('Asia/Jakarta')
 
 class KiteAI:
     def __init__(self) -> None:
-        self.auto_claim_faucet = str(os.getenv("AUTO_CLAIM_FAUCET")).strip().lower()
-        self.auto_deposit_token = str(os.getenv("AUTO_DEPOSIT_TOKEN")).strip().lower()
-        self.auto_withdraw_token = str(os.getenv("AUTO_WITHDRAW_TOKEN")).strip().lower()
-        self.auto_unstake_token = str(os.getenv("AUTO_UNSTAKE_TOKEN")).strip().lower()
-        self.auto_stake_token = str(os.getenv("AUTO_STAKE_TOKEN")).strip().lower()
-        self.auto_claim_reward = str(os.getenv("AUTO_CLAIM_REWARD")).strip().lower()
-        self.auto_daily_quiz = str(os.getenv("AUTO_DAILY_QUIZ")).strip().lower()
-        self.auto_chat_ai_agent = str(os.getenv("AUTO_CHAT_AI_AGENT")).strip().lower()
-        self.auto_bridge_token = str(os.getenv("AUTO_BRIDGE_TOKEN")).strip().lower()
-        self.auto_swap_token = str(os.getenv("AUTO_SWAP_TOKEN")).strip().lower()
+        self.auto_claim_faucet = str(os.getenv("AUTO_CLAIM_FAUCET", "FALSE")).strip().lower() == "true"
+        self.auto_deposit_token = str(os.getenv("AUTO_DEPOSIT_TOKEN", "FALSE")).strip().lower() == "true"
+        self.auto_withdraw_token = str(os.getenv("AUTO_WITHDRAW_TOKEN", "FALSE")).strip().lower() == "true"
+        self.auto_unstake_token = str(os.getenv("AUTO_UNSTAKE_TOKEN", "FALSE")).strip().lower() == "true"
+        self.auto_stake_token = str(os.getenv("AUTO_STAKE_TOKEN", "FALSE")).strip().lower() == "true"
+        self.auto_claim_reward = str(os.getenv("AUTO_CLAIM_REWARD", "FALSE")).strip().lower() == "true"
+        self.auto_daily_quiz = str(os.getenv("AUTO_DAILY_QUIZ", "FALSE")).strip().lower() == "true"
+        self.auto_chat_ai_agent = str(os.getenv("AUTO_CHAT_AI_AGENT", "FALSE")).strip().lower() == "true"
+        self.auto_create_multisig = str(os.getenv("AUTO_CREATE_MULTISIG", "FALSE")).strip().lower() == "true"
+        self.auto_swap_token = str(os.getenv("AUTO_SWAP_TOKEN", "FALSE")).strip().lower() == "true"
+        self.auto_bridge_token = str(os.getenv("AUTO_BRIDGE_TOKEN", "FALSE")).strip().lower() == "true"
 
         self.USDT_CONTRACT_ADDRESS = "0x0fF5393387ad2f9f691FD6Fd28e07E3969e27e63"
         self.WKITE_CONTRACT_ADDRESS = "0x3bC8f037691Ce1d28c0bB224BD33563b49F99dE8"
         self.ZERO_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"
+        self.SAFE_PROXY_FACTORY_ADDRESS = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"
+        self.GNOSIS_SAFE_L2_ADDRESS = "0x3E5c63644E683549055b9Be8653de26E0B4CD36E"
+        self.FALLBACK_HANDLER_ADDRESS = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4"
         self.BRIDGE_ROUTER_ADDRESS = "0xD1bd49F60A6257dC96B3A040e6a1E17296A51375"
         self.SWAP_ROUTER_ADDRESS = "0x04CfcA82fDf5F4210BC90f06C44EF25Bf743D556"
         self.DEST_BLOCKCHAIN_ID = "0x6715950e0aad8a92efaade30bd427599e88c459c2d8e29ec350fc4bfb371a114"
@@ -122,6 +126,19 @@ class KiteAI:
             {"type":"function","name":"send","stateMutability":"nonpayable","inputs":[{"name":"_destChainId","type":"uint256"},{"name":"_recipient","type":"address"},{"name":"_amount","type":"uint256"}],"outputs":[]},
             {
                 "type":"function",
+                "name":"createProxyWithNonce",
+                "stateMutability":"nonpayable",
+                "inputs":[
+                    {"internalType":"address","name":"_singleton","type":"address"}, 
+                    {"internalType":"bytes","name":"initializer","type":"bytes"}, 
+                    {"internalType":"uint256","name":"saltNonce","type":"uint256"}
+                ],
+                "outputs": [
+                    {"internalType":"contract GnosisSafeProxy","name":"proxy","type":"address"}
+                ]
+            },
+            {
+                "type":"function",
                 "name":"initiate",
                 "stateMutability":"nonpayable",
                 "inputs":[
@@ -169,19 +186,44 @@ class KiteAI:
                 "outputs":[]
             }
         ]''')
+
+        self.BITMIND_SUBNET = {
+            "id": "702",
+            "name": "Bitmind",
+            "address": "0xda925c81137dd6e44891cdbd5e84bda3b4f81671"
+        }
+
+        self.VERONIKA_SUBNET = {
+            "id": "699",
+            "name": "AI Veronika",
+            "address": "0xb20f6f7d85f657c8cb66a7ee80799cf40f1d3533"
+        }
+
+        self.KITE_SUBNET = {
+            "id": "496",
+            "name": "Kite AI Agents",
+            "address": "0xb132001567650917d6bd695d1fab55db7986e9a5"
+        }
+
+        self.BITTE_SUBNET = {
+            "id": "701",
+            "name": "Bitte",
+            "address": "0x72ce733c9974b180bed20343bd1024a3f855ec0c"
+        }
         
         self.FAUCET_API = "https://faucet.gokite.ai"
         self.TESTNET_API = "https://testnet.gokite.ai"
         self.BRIDGE_API = "https://bridge-backend.prod.gokite.ai"
         self.NEO_API = "https://neo.prod.gokite.ai"
         self.OZONE_API = "https://ozone-point-system.prod.gokite.ai"
+        self.MULTISIG_API = "https://wallet-client.ash.center/v1"
         self.FAUCET_SITE_KEY = "6LeNaK8qAAAAAHLuyTlCrZD_U1UoFLcCTLoa_69T"
         self.TESTNET_SITE_KEY = "6Lc_VwgrAAAAALtx_UtYQnW-cFg8EPDgJ8QVqkaz"
-        self.KITE_AI_SUBNET = "0xb132001567650917d6bd695d1fab55db7986e9a5"
         self.CAPTCHA_KEY = None
         self.FAUCET_HEADERS = {}
         self.TESTNET_HEADERS = {}
         self.BRIDGE_HEADERS = {}
+        self.MULTISIG_HEADERS = {}
         self.proxies = []
         self.proxy_index = 0
         self.account_proxies = {}
@@ -559,6 +601,65 @@ class KiteAI:
                 f"{Fore.RED+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
             )
             return None, None
+        
+    def build_initializer_data(self, address: str):
+        try:
+            initializer_prefix = bytes.fromhex("b63e800d")
+            initializer_bytes = encode(
+                [ 'address[]', 'uint256', 'address', 'bytes', 'address', 'address', 'uint256', 'address' ],
+                [ 
+                    [address], 
+                    1, 
+                    self.ZERO_CONTRACT_ADDRESS, 
+                    b"", 
+                    self.FALLBACK_HANDLER_ADDRESS, 
+                    self.ZERO_CONTRACT_ADDRESS, 
+                    0, 
+                    self.ZERO_CONTRACT_ADDRESS,
+                ]
+            )
+
+            initializer = initializer_prefix + initializer_bytes
+
+            return initializer
+        except Exception as e:
+            raise Exception(f"Built Initializer Data Failed: {str(e)}")
+    
+    async def perform_create_proxy(self, account: str, address: str, salt_nonce: int, use_proxy: bool):
+        try:
+            web3 = await self.get_web3_with_check(address, self.KITE_AI['rpc_url'], use_proxy)
+
+            initializer = self.build_initializer_data(address)
+
+            token_contract = web3.eth.contract(address=web3.to_checksum_address(self.SAFE_PROXY_FACTORY_ADDRESS), abi=self.ERC20_CONTRACT_ABI)
+            create_proxy_data = token_contract.functions.createProxyWithNonce(self.GNOSIS_SAFE_L2_ADDRESS, initializer, salt_nonce)
+            
+            proxy_address = create_proxy_data.call({"from": address})
+
+            estimated_gas = create_proxy_data.estimate_gas({"from": address})
+            max_priority_fee = web3.to_wei(0.001, "gwei")
+            max_fee = max_priority_fee
+
+            create_proxy_tx = create_proxy_data.build_transaction({
+                "from": address,
+                "gas": int(estimated_gas * 1.2),
+                "maxFeePerGas": int(max_fee),
+                "maxPriorityFeePerGas": int(max_priority_fee),
+                "nonce": web3.eth.get_transaction_count(address, "pending"),
+                "chainId": web3.eth.chain_id,
+            })
+
+            tx_hash = await self.send_raw_transaction_with_retries(account, web3, create_proxy_tx)
+            receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
+            block_number = receipt.blockNumber
+
+            return tx_hash, block_number, proxy_address
+        except Exception as e:
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Message : {Style.RESET_ALL}"
+                f"{Fore.RED+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
+            )
+            return None, None, None
     
     async def approving_token(self, account: str, address: str, rpc_url: str, spender_address: str, contract_address: str, amount_to_wei: int, explorer: str, use_proxy: bool):
         try:
@@ -840,17 +941,6 @@ class KiteAI:
     def print_unstake_question(self):
         while True:
             try:
-                unstake_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Unstaking Count -> {Style.RESET_ALL}").strip())
-                if unstake_count >= 1:
-                    self.unstake_count = unstake_count
-                    break
-                else:
-                    print(f"{Fore.RED + Style.BRIGHT}Unstake Count must be > 0.{Style.RESET_ALL}")
-            except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-        while True:
-            try:
                 unstake_amount = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Unstaking Amount [KITE] (Min. 1 KITE) -> {Style.RESET_ALL}").strip())
                 if unstake_amount >= 1:
                     self.unstake_amount = unstake_amount
@@ -861,17 +951,6 @@ class KiteAI:
                 print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
     
     def print_stake_question(self):
-        while True:
-            try:
-                stake_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Staking Count -> {Style.RESET_ALL}").strip())
-                if stake_count >= 1:
-                    self.stake_count = stake_count
-                    break
-                else:
-                    print(f"{Fore.RED + Style.BRIGHT}Stake Count must be > 0.{Style.RESET_ALL}")
-            except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
         while True:
             try:
                 stake_amount = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Staking Amount [KITE] (Min. 1 KITE) -> {Style.RESET_ALL}").strip())
@@ -889,6 +968,18 @@ class KiteAI:
                 ai_chat_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter AI Chat Count -> {Style.RESET_ALL}").strip())
                 if ai_chat_count > 0:
                     self.ai_chat_count = ai_chat_count
+                    break
+                else:
+                    print(f"{Fore.RED + Style.BRIGHT}AI Chat Count must be > 0.{Style.RESET_ALL}")
+            except ValueError:
+                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
+    
+    def print_multisig_question(self):
+        while True:
+            try:
+                multisig_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Multisig Count -> {Style.RESET_ALL}").strip())
+                if multisig_count > 0:
+                    self.multisig_count = multisig_count
                     break
                 else:
                     print(f"{Fore.RED + Style.BRIGHT}AI Chat Count must be > 0.{Style.RESET_ALL}")
@@ -1009,12 +1100,13 @@ class KiteAI:
                 print(f"{Fore.WHITE + Style.BRIGHT}6. Claim Stake Reward{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}7. Complete Daily Quiz{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}8. AI Agent Chat{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}9. Random Swap{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}10. Random Bridge{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}11. Run All Features{Style.RESET_ALL}")
-                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3/4/5/6/7/8/9/10/11] -> {Style.RESET_ALL}").strip())
+                print(f"{Fore.WHITE + Style.BRIGHT}9. Create Multisig{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}10. Random Swap{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}11. Random Bridge{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}12. Run All Features{Style.RESET_ALL}")
+                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3/4/5/6/7/8/9/10/11/12] -> {Style.RESET_ALL}").strip())
 
-                if option in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]:
+                if option in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
                     option_type = (
                         "Claim Faucets" if option == 1 else 
                         "Deposit KITE Token" if option == 2 else 
@@ -1024,16 +1116,17 @@ class KiteAI:
                         "Claim Stake Reward" if option == 6 else 
                         "Complete Daily Quiz" if option == 7 else 
                         "AI Agent Chat" if option == 8 else 
-                        "Random Swap" if option == 9 else 
-                        "Random Bridge" if option == 10 else 
+                        "Create Multisig" if option == 9 else 
+                        "Random Swap" if option == 10 else 
+                        "Random Bridge" if option == 11 else 
                         "Run All Features"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
                     break
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, or 11.{Style.RESET_ALL}")
+                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, or 12.{Style.RESET_ALL}")
             except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, or 11).{Style.RESET_ALL}")
+                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, or 12).{Style.RESET_ALL}")
 
         if option == 2:
             self.print_deposit_question()
@@ -1054,33 +1147,40 @@ class KiteAI:
             self.print_delay_question()
 
         elif option == 9:
-            self.print_swap_question()
+            self.print_multisig_question()
             self.print_delay_question()
 
         elif option == 10:
+            self.print_swap_question()
+            self.print_delay_question()
+
+        elif option == 11:
             self.print_bridge_question()
             self.print_delay_question()
 
         else:
-            if self.auto_deposit_token == "true":
+            if self.auto_deposit_token:
                 self.print_deposit_question()
 
-            if self.auto_withdraw_token == "true":
+            if self.auto_withdraw_token:
                 self.print_withdraw_options()
 
-            if self.auto_unstake_token == "true":
+            if self.auto_unstake_token:
                 self.print_unstake_question()
 
-            if self.auto_stake_token == "true":
+            if self.auto_stake_token:
                 self.print_stake_question()
 
-            if self.auto_chat_ai_agent == "true":
+            if self.auto_chat_ai_agent:
                 self.print_ai_chat_question()
 
-            if self.auto_swap_token == "true":
+            if self.auto_create_multisig:
+                self.print_multisig_question()
+
+            if self.auto_swap_token:
                 self.print_swap_question()
 
-            if self.auto_bridge_token == "true":
+            if self.auto_bridge_token:
                 self.print_bridge_question()
             
             self.print_delay_question()
@@ -1396,8 +1496,8 @@ class KiteAI:
 
         return None
     
-    async def staked_info(self, address: str, use_proxy: bool, retries=5):
-        url = f"{self.OZONE_API}/me/staked"
+    async def staked_info(self, address: str, subnet_id: str, use_proxy: bool, retries=5):
+        url = f"{self.OZONE_API}/subnet/{subnet_id}/staked-info?id={subnet_id}"
         headers = {
             **self.TESTNET_HEADERS[address],
             "Authorization": f"Bearer {self.access_tokens[address]}"
@@ -1424,9 +1524,9 @@ class KiteAI:
 
         return None
             
-    async def unstake_token(self, address: str, unstake_amount: int, use_proxy: bool, retries=5):
+    async def unstake_token(self, address: str, subnet_address: str, unstake_amount: int, use_proxy: bool, retries=5):
         url = f"{self.OZONE_API}/subnet/undelegate"
-        data = json.dumps({"subnet_address":self.KITE_AI_SUBNET, "amount":unstake_amount})
+        data = json.dumps({"subnet_address":subnet_address, "amount":unstake_amount})
         headers = {
             **self.TESTNET_HEADERS[address],
             "Authorization": f"Bearer {self.access_tokens[address]}",
@@ -1468,9 +1568,9 @@ class KiteAI:
 
         return None
             
-    async def stake_token(self, address: str, stake_amount: int, use_proxy: bool, retries=5):
+    async def stake_token(self, address: str, subnet_address: str, stake_amount: int, use_proxy: bool, retries=5):
         url = f"{self.OZONE_API}/subnet/delegate"
-        data = json.dumps({"subnet_address":self.KITE_AI_SUBNET, "amount":stake_amount})
+        data = json.dumps({"subnet_address":subnet_address, "amount":stake_amount})
         headers = {
             **self.TESTNET_HEADERS[address],
             "Authorization": f"Bearer {self.access_tokens[address]}",
@@ -1499,9 +1599,9 @@ class KiteAI:
 
         return None
 
-    async def claim_stake_rewards(self, address: str, use_proxy: bool, retries=5):
+    async def claim_stake_rewards(self, address: str, subnet_address: str, use_proxy: bool, retries=5):
         url = f"{self.OZONE_API}/subnet/claim-rewards"
-        data = json.dumps({"subnet_address":self.KITE_AI_SUBNET})
+        data = json.dumps({"subnet_address":subnet_address})
         headers = {
             **self.TESTNET_HEADERS[address],
             "Authorization": f"Bearer {self.access_tokens[address]}",
@@ -1752,6 +1852,30 @@ class KiteAI:
 
         return None
     
+    async def owner_safes_wallet(self, address: str, use_proxy: bool, retries=5):
+        url = f"{self.MULTISIG_API}/chains/2368/owners/{address}/safes"
+        await asyncio.sleep(3)
+        for attempt in range(retries):
+            proxy_url = self.get_next_proxy_for_account(address) if use_proxy else None
+            connector, proxy, proxy_auth = self.build_proxy_config(proxy_url)
+            try:
+                async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
+                    async with session.get(url=url, headers=self.MULTISIG_HEADERS[address], proxy=proxy, proxy_auth=proxy_auth) as response:
+                        response.raise_for_status()
+                        return await response.json()
+            except (Exception, ClientResponseError) as e:
+                if attempt < retries - 1:
+                    await asyncio.sleep(5)
+                    continue
+                self.log(
+                    f"{Fore.BLUE+Style.BRIGHT}   Message : {Style.RESET_ALL}"
+                    f"{Fore.RED+Style.BRIGHT}Fetch Salt Nonce Failed{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
+                    f"{Fore.YELLOW+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
+                )
+
+        return None
+    
     async def submit_bridge_transfer(self, address: str, src_chain_id: int, dest_chain_id: int, src_address: str, dest_address: str, amount_to_wei: int, tx_hash: str, use_proxy: bool, retries=5):
         url = f"{self.BRIDGE_API}/bridge-transfer"
         data = json.dumps(self.generate_bridge_payload(address, src_chain_id, dest_chain_id, src_address, dest_address, amount_to_wei, tx_hash))
@@ -1823,6 +1947,35 @@ class KiteAI:
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Explorer: {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{self.KITE_AI['explorer']}{tx_hash}{Style.RESET_ALL}"
+            )
+
+    async def process_perform_create_proxy(self, account: str, address: str, salt_nonce: int, use_proxy: bool):
+        tx_hash, block_number, proxy_address = await self.perform_create_proxy(account, address, salt_nonce, use_proxy)
+        if tx_hash and block_number and proxy_address:
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT}Success{Style.RESET_ALL}                                              "
+            )
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Address : {Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT}{proxy_address}{Style.RESET_ALL}"
+            )
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Block   : {Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT}{block_number}{Style.RESET_ALL}"
+            )
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Tx Hash : {Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT}{tx_hash}{Style.RESET_ALL}"
+            )
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Explorer: {Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT}{self.KITE_AI['explorer']}{tx_hash}{Style.RESET_ALL}"
+            )
+        else:
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
+                f"{Fore.RED+Style.BRIGHT}Perform On-Chain Failed{Style.RESET_ALL}"
             )
 
     async def process_perform_swap(self, account: str, address: str, swap_type: str, token_in: str, token_out: str, amount: float, use_proxy: bool):
@@ -2073,41 +2226,38 @@ class KiteAI:
     async def process_option_4(self, address: str, use_proxy: bool):
         self.log(f"{Fore.CYAN+Style.BRIGHT}Unstaking :{Style.RESET_ALL}                                              ")
 
-        staked = await self.staked_info(address, use_proxy)
-        if not staked: return
+        for subnet in [self.BITMIND_SUBNET, self.VERONIKA_SUBNET, self.KITE_SUBNET, self.BITTE_SUBNET]:
+            subnet_id = subnet["id"]
+            subnet_name = subnet["name"]
+            subnet_address = subnet["address"]
 
-        staked_balance = staked.get("data", {}).get("total_staked_amount", 0)
-        
-        for i in range(self.unstake_count):
             self.log(
-                f"{Fore.BLUE+Style.BRIGHT} ● {Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT}Unstake{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {i+1} {Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {self.unstake_count} {Style.RESET_ALL}                                              "
+                f"{Fore.BLUE + Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT}{subnet_name}{Style.RESET_ALL}                                              "
             )
-
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Amount  : {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{self.unstake_amount} KITE{Style.RESET_ALL}"
             )
+
+            staked = await self.staked_info(address, subnet_id, use_proxy)
+            if not staked: continue
+
+            staked_balance = staked.get("data", {}).get("my_staked_amount", 0)
+
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Staked  : {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{staked_balance} KITE{Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Subnet  : {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}Kite AI Agent{Style.RESET_ALL}"
             )
 
             if staked_balance < self.unstake_amount:
                 self.log(
                     f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
-                    f"{Fore.YELLOW+Style.BRIGHT}Insufficient KITE Token Staked Balance{Style.RESET_ALL}"
+                    f"{Fore.YELLOW+Style.BRIGHT}Insufficient KITE Token Staked Balance in {subnet_name} Subnet{Style.RESET_ALL}"
                 )
-                return
+                continue
             
-            unstake = await self.unstake_token(address, self.unstake_amount, use_proxy)
+            unstake = await self.unstake_token(address, subnet_address, self.unstake_amount, use_proxy)
             if unstake:
                 staked_balance = unstake.get("data", {}).get("my_staked_amount")
                 tx_hash = unstake.get("data", {}).get("tx_hash")
@@ -2135,15 +2285,15 @@ class KiteAI:
 
         kite_balance = balance.get("data", {}).get("balances", {}).get("kite", 0)
         
-        for i in range(self.stake_count):
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT} ● {Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT}Stake{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {i+1} {Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {self.stake_count} {Style.RESET_ALL}                                              "
-            )
+        for subnet in [self.BITMIND_SUBNET, self.VERONIKA_SUBNET, self.KITE_SUBNET, self.BITTE_SUBNET]:
+            subnet_id = subnet["id"]
+            subnet_name = subnet["name"]
+            subnet_address = subnet["address"]
 
+            self.log(
+                f"{Fore.BLUE + Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT}{subnet_name}{Style.RESET_ALL}                                              "
+            )
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Amount  : {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{self.stake_amount} KITE{Style.RESET_ALL}"
@@ -2151,10 +2301,6 @@ class KiteAI:
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Balance : {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{kite_balance} KITE{Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Subnet  : {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}Kite AI Agent{Style.RESET_ALL}"
             )
 
             if kite_balance < self.stake_amount:
@@ -2164,7 +2310,7 @@ class KiteAI:
                 )
                 return
             
-            stake = await self.stake_token(address, self.stake_amount, use_proxy)
+            stake = await self.stake_token(address, subnet_address, self.stake_amount, use_proxy)
             if stake:
                 tx_hash = stake.get("data", {}).get("tx_hash")
                 
@@ -2188,27 +2334,39 @@ class KiteAI:
     async def process_option_6(self, address: str, use_proxy: bool):
         self.log(f"{Fore.CYAN+Style.BRIGHT}Reward    :{Style.RESET_ALL}                                              ")
 
-        claim = await self.claim_stake_rewards(address, use_proxy)
-        if claim:
-            amount = claim.get("data", {}).get("claim_amount")
-            tx_hash = claim.get("data", {}).get("tx_hash")
+        for subnet in [self.BITMIND_SUBNET, self.VERONIKA_SUBNET, self.KITE_SUBNET, self.BITTE_SUBNET]:
+            subnet_id = subnet["id"]
+            subnet_name = subnet["name"]
+            subnet_address = subnet["address"]
 
             self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT}Claimed Successfully{Style.RESET_ALL}"
+                f"{Fore.BLUE + Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT}{subnet_name}{Style.RESET_ALL}                                              "
             )
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Amount  : {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}{amount} USDT{Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Tx Hash : {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}{tx_hash}{Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.BLUE+Style.BRIGHT}   Explorer: {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}{self.KITE_AI['explorer']}{tx_hash}{Style.RESET_ALL}"
-            )
+
+            claim = await self.claim_stake_rewards(address, subnet_address, use_proxy)
+            if claim:
+                amount = claim.get("data", {}).get("claim_amount")
+                tx_hash = claim.get("data", {}).get("tx_hash")
+
+                self.log(
+                    f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
+                    f"{Fore.GREEN+Style.BRIGHT}Claimed Successfully{Style.RESET_ALL}"
+                )
+                self.log(
+                    f"{Fore.BLUE+Style.BRIGHT}   Amount  : {Style.RESET_ALL}"
+                    f"{Fore.WHITE+Style.BRIGHT}{amount} USDT{Style.RESET_ALL}"
+                )
+                self.log(
+                    f"{Fore.BLUE+Style.BRIGHT}   Tx Hash : {Style.RESET_ALL}"
+                    f"{Fore.WHITE+Style.BRIGHT}{tx_hash}{Style.RESET_ALL}"
+                )
+                self.log(
+                    f"{Fore.BLUE+Style.BRIGHT}   Explorer: {Style.RESET_ALL}"
+                    f"{Fore.WHITE+Style.BRIGHT}{self.KITE_AI['explorer']}{tx_hash}{Style.RESET_ALL}"
+                )
+
+            await self.print_timer("Transactions")
 
     async def process_option_7(self, address: str, use_proxy: bool):
         self.log(f"{Fore.CYAN+Style.BRIGHT}Daily Quiz:{Style.RESET_ALL}                                              ")
@@ -2295,7 +2453,7 @@ class KiteAI:
             question = random.choice(available_questions)
 
             self.log(
-                f"{Fore.BLUE + Style.BRIGHT}   Agnet   : {Style.RESET_ALL}"
+                f"{Fore.BLUE + Style.BRIGHT}   Agent   : {Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT}{agent_name}{Style.RESET_ALL}"
             )
             self.log(
@@ -2337,6 +2495,26 @@ class KiteAI:
             await self.print_timer("Interactions")
 
     async def process_option_9(self, account: str, address: str, use_proxy: bool):
+        self.log(f"{Fore.CYAN+Style.BRIGHT}Multisig  :{Style.RESET_ALL}                                              ")
+
+        for i in range(self.multisig_count):
+            self.log(
+                f"{Fore.BLUE+Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT}Create{Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT} {i+1} {Style.RESET_ALL}"
+                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT} {self.multisig_count} {Style.RESET_ALL}                                              "
+            )
+
+            safes = await self.owner_safes_wallet(address, use_proxy)
+            if not safes: continue
+
+            salt_nonce = len(safes.get("safes", []))
+
+            await self.process_perform_create_proxy(account, address, salt_nonce, use_proxy)
+            await self.print_timer("Transactions")
+
+    async def process_option_10(self, account: str, address: str, use_proxy: bool):
         self.log(f"{Fore.CYAN+Style.BRIGHT}Swap      :{Style.RESET_ALL}                                              ")
 
         for i in range(self.swap_count):
@@ -2375,7 +2553,7 @@ class KiteAI:
             await self.process_perform_swap(account, address, swap_type, token_in, token_out, amount, use_proxy)
             await self.print_timer("Transactions")
 
-    async def process_option_10(self, account: str, address: str, use_proxy: bool):
+    async def process_option_11(self, account: str, address: str, use_proxy: bool):
         self.log(f"{Fore.CYAN+Style.BRIGHT}Bridge    :{Style.RESET_ALL}                                              ")
 
         for i in range(self.bridge_count):
@@ -2524,36 +2702,42 @@ class KiteAI:
             elif option == 10:
                 await self.process_option_10(account, address, use_proxy)
 
+            elif option == 11:
+                await self.process_option_11(account, address, use_proxy)
+
             else:
-                if self.auto_claim_faucet == "true":
+                if self.auto_claim_faucet:
                     await self.process_option_1(address, user, use_proxy)
 
-                if self.auto_deposit_token == "true":
+                if self.auto_deposit_token:
                     await self.process_option_2(account, address, use_proxy)
 
-                if self.auto_withdraw_token == "true":
+                if self.auto_withdraw_token:
                     await self.process_option_3(address, use_proxy)
 
-                if self.auto_unstake_token == "true":
+                if self.auto_unstake_token:
                     await self.process_option_4(address, use_proxy)
 
-                if self.auto_stake_token == "true":
+                if self.auto_stake_token:
                     await self.process_option_5(address, use_proxy)
 
-                if self.auto_claim_reward == "true":
+                if self.auto_claim_reward:
                     await self.process_option_6(address, use_proxy)
 
-                if self.auto_daily_quiz == "true":
+                if self.auto_daily_quiz:
                     await self.process_option_7(address, use_proxy)
 
-                if self.auto_chat_ai_agent == "true":
+                if self.auto_chat_ai_agent:
                     await self.process_option_8(address, use_proxy)
 
-                if self.auto_swap_token == "true":
+                if self.auto_create_multisig:
                     await self.process_option_9(account, address, use_proxy)
 
-                if self.auto_bridge_token == "true":
+                if self.auto_swap_token:
                     await self.process_option_10(account, address, use_proxy)
+
+                if self.auto_bridge_token:
+                    await self.process_option_11(account, address, use_proxy)
 
     async def main(self):
         try:
@@ -2640,6 +2824,17 @@ class KiteAI:
                             "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
                             "Origin": "https://bridge.prod.gokite.ai",
                             "Referer": "https://bridge.prod.gokite.ai/",
+                            "Sec-Fetch-Dest": "empty",
+                            "Sec-Fetch-Mode": "cors",
+                            "Sec-Fetch-Site": "same-site",
+                            "User-Agent": user_agent
+                        }
+
+                        self.MULTISIG_HEADERS[address] = {
+                            "Accept-Language": "*/*",
+                            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+                            "Origin": "https://wallet.ash.center",
+                            "Referer": "https://wallet.ash.center/",
                             "Sec-Fetch-Dest": "empty",
                             "Sec-Fetch-Mode": "cors",
                             "Sec-Fetch-Site": "same-site",

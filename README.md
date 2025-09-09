@@ -20,6 +20,7 @@ Kite AI Ozone BOT
   - Auto Claim Stake Reward
   - Auto Complete Daily Quiz
   - Auto Interact With AI Agent
+  - Auto Create Multisig Wallet
   - Auto Make Random Swap
   - Auto Make Random Bridge
   - Multi Accounts
