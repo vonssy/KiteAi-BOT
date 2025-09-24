@@ -26,18 +26,6 @@ Kite AI BOT is an automated tool designed to streamline onchain operations acros
 
 > **Important:** Connect new evm wallet.
 
-  - Auto Claim Faucets `Need 2Captcha Key`
-  - Auto Deposit KITE Token
-  - Auto Withdraw Tokens
-  - Auto Unstake KITE Token
-  - Auto Stake KITE Token
-  - Auto Claim Stake Reward
-  - Auto Complete Daily Quiz
-  - Auto Interact With AI Agent
-  - Auto Create Multisig Wallet
-  - Auto Make Random Swap
-  - Auto Make Random Bridge
-
 ## ✨ Features
 
 - 🔄 **Automated Account Management** - Retrieve account information automatically
