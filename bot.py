@@ -12,7 +12,7 @@ from fake_useragent import FakeUserAgent
 from http.cookies import SimpleCookie
 from datetime import datetime, timezone
 from colorama import *
-import asyncio, binascii, random, json, re, os, pytz
+import asyncio, binascii, random, time, json, re, os, pytz
 
 load_dotenv()
 
@@ -216,7 +216,6 @@ class KiteAI:
         self.BRIDGE_API = "https://bridge-backend.prod.gokite.ai"
         self.NEO_API = "https://neo.prod.gokite.ai"
         self.OZONE_API = "https://ozone-point-system.prod.gokite.ai"
-        self.MULTISIG_API = "https://wallet-client.ash.center/v1"
         self.FAUCET_SITE_KEY = "6LeNaK8qAAAAAHLuyTlCrZD_U1UoFLcCTLoa_69T"
         self.TESTNET_SITE_KEY = "6Lc_VwgrAAAAALtx_UtYQnW-cFg8EPDgJ8QVqkaz"
         self.CAPTCHA_KEY = None
@@ -625,11 +624,13 @@ class KiteAI:
         except Exception as e:
             raise Exception(f"Built Initializer Data Failed: {str(e)}")
     
-    async def perform_create_proxy(self, account: str, address: str, salt_nonce: int, use_proxy: bool):
+    async def perform_create_proxy(self, account: str, address: str, use_proxy: bool):
         try:
             web3 = await self.get_web3_with_check(address, self.KITE_AI['rpc_url'], use_proxy)
 
             initializer = self.build_initializer_data(address)
+
+            salt_nonce = int(time.time())
 
             token_contract = web3.eth.contract(address=web3.to_checksum_address(self.SAFE_PROXY_FACTORY_ADDRESS), abi=self.ERC20_CONTRACT_ABI)
             create_proxy_data = token_contract.functions.createProxyWithNonce(self.GNOSIS_SAFE_L2_ADDRESS, initializer, salt_nonce)
@@ -1855,30 +1856,6 @@ class KiteAI:
 
         return None
     
-    async def owner_safes_wallet(self, address: str, use_proxy: bool, retries=5):
-        url = f"{self.MULTISIG_API}/chains/2368/owners/{address}/safes"
-        await asyncio.sleep(3)
-        for attempt in range(retries):
-            proxy_url = self.get_next_proxy_for_account(address) if use_proxy else None
-            connector, proxy, proxy_auth = self.build_proxy_config(proxy_url)
-            try:
-                async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
-                    async with session.get(url=url, headers=self.MULTISIG_HEADERS[address], proxy=proxy, proxy_auth=proxy_auth) as response:
-                        response.raise_for_status()
-                        return await response.json()
-            except (Exception, ClientResponseError) as e:
-                if attempt < retries - 1:
-                    await asyncio.sleep(5)
-                    continue
-                self.log(
-                    f"{Fore.BLUE+Style.BRIGHT}   Message : {Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT}Fetch Salt Nonce Failed{Style.RESET_ALL}"
-                    f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.YELLOW+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
-                )
-
-        return None
-    
     async def submit_bridge_transfer(self, address: str, src_chain_id: int, dest_chain_id: int, src_address: str, dest_address: str, amount_to_wei: int, tx_hash: str, use_proxy: bool, retries=5):
         url = f"{self.BRIDGE_API}/bridge-transfer"
         data = json.dumps(self.generate_bridge_payload(address, src_chain_id, dest_chain_id, src_address, dest_address, amount_to_wei, tx_hash))
@@ -1952,8 +1929,8 @@ class KiteAI:
                 f"{Fore.WHITE+Style.BRIGHT}{self.KITE_AI['explorer']}{tx_hash}{Style.RESET_ALL}"
             )
 
-    async def process_perform_create_proxy(self, account: str, address: str, salt_nonce: int, use_proxy: bool):
-        tx_hash, block_number, proxy_address = await self.perform_create_proxy(account, address, salt_nonce, use_proxy)
+    async def process_perform_create_proxy(self, account: str, address: str, use_proxy: bool):
+        tx_hash, block_number, proxy_address = await self.perform_create_proxy(account, address, use_proxy)
         if tx_hash and block_number and proxy_address:
             self.log(
                 f"{Fore.BLUE+Style.BRIGHT}   Status  : {Style.RESET_ALL}"
@@ -2509,12 +2486,7 @@ class KiteAI:
                 f"{Fore.WHITE+Style.BRIGHT} {self.multisig_count} {Style.RESET_ALL}                                              "
             )
 
-            safes = await self.owner_safes_wallet(address, use_proxy)
-            if not safes: continue
-
-            salt_nonce = len(safes.get("safes", []))
-
-            await self.process_perform_create_proxy(account, address, salt_nonce, use_proxy)
+            await self.process_perform_create_proxy(account, address, use_proxy)
             await self.print_timer("Transactions")
 
     async def process_option_10(self, account: str, address: str, use_proxy: bool):
@@ -2827,17 +2799,6 @@ class KiteAI:
                             "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
                             "Origin": "https://bridge.prod.gokite.ai",
                             "Referer": "https://bridge.prod.gokite.ai/",
-                            "Sec-Fetch-Dest": "empty",
-                            "Sec-Fetch-Mode": "cors",
-                            "Sec-Fetch-Site": "same-site",
-                            "User-Agent": user_agent
-                        }
-
-                        self.MULTISIG_HEADERS[address] = {
-                            "Accept-Language": "*/*",
-                            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "Origin": "https://wallet.ash.center",
-                            "Referer": "https://wallet.ash.center/",
                             "Sec-Fetch-Dest": "empty",
                             "Sec-Fetch-Mode": "cors",
                             "Sec-Fetch-Site": "same-site",
